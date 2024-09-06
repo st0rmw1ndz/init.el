@@ -4,6 +4,8 @@
 #+OPTIONS: num:nil
 
 * Package Bootstrapping
+MELPA is a must for any Emacs configuration, it houses nearly everything you'd need related to Emacs. =use-package= is a useful macro for installing and configuring local remote packages.
+
 #+BEGIN_SRC emacs-lisp
   ;; Add MELPA to the repositories list
   (require 'package)
@@ -22,6 +24,8 @@
 #+END_SRC
 
 * Look and Feel
+I tend to like having a clean and unobtrusive interface, so I disable most of the UI elements. Switching to a visual-only bell is also essential; the audio one is quite annoying.
+
 #+BEGIN_SRC emacs-lisp
   ;; Set the theme
   (use-package ample-theme
@@ -57,6 +61,8 @@
 #+END_SRC
 
 * Input and Text Manipulation
+Useful options and packages for manipulating text, including the almighty Evil mode, which emulates Vi-style bindings. I also use these bindings in other modes, such as Dired and Org.
+
 #+BEGIN_SRC emacs-lisp
   ;; Better mouse scrolling
   (setq mouse-wheel-progressive-speed nil)
@@ -82,6 +88,13 @@
      evil-vsplit-window-right t)
     :config (evil-mode))
 
+  ;; General extension for Evil
+  (use-package evil-collection
+    :after evil
+    :config
+    (setq evil-collection-mode-list '(dired ibuffer))
+    (evil-collection-init))
+
   ;; Org extension for Evil
   (use-package evil-org
     :ensure t
@@ -90,6 +103,8 @@
 #+END_SRC
 
 * General Interface Improvements
+I consider Vertico to be essential, as I find it to be a superior completion UI over the default one. Orderless is also very convenient as a completion style. Consult is very useful for searching through your buffers.
+
 #+BEGIN_SRC emacs-lisp
   ;; Use short yes/no answers
   (setq-default use-short-answers t)
@@ -126,6 +141,8 @@
 #+END_SRC
 
 * Programming Extensions
+Adding support for LSP, enabling static analysis, pop-up completions, Git integration, and other major modes not included by default.
+
 #+BEGIN_SRC emacs-lisp
   ;;; LSP support
   (use-package eglot
@@ -204,6 +221,8 @@
 #+END_SRC
 
 * Etcetera
+Anything else that doesn't fit the bill.
+
 #+BEGIN_SRC emacs-lisp
   ;; Store automatic customization options elsewhere
   (setq custom-file (locate-user-emacs-file "custom.el"))
