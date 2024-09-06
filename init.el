@@ -2,5 +2,5 @@
 ;;; Commentary:
 ;;; Code:
 
-(org-babel-load-file (locate-user-emacs-file "config.org"))
+(org-babel-load-file (locate-user-emacs-file "README.org"))
 ;;; init.el ends here
