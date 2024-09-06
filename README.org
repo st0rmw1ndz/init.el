@@ -3,21 +3,30 @@
 #+EMAIL: passedgoandgot200@gmail.com
 #+OPTIONS: num:nil
 
+* Package Bootstrapping
 #+BEGIN_SRC emacs-lisp
-  ;;; Initial bootstrapping
-
-  ;; Enable MELPA repository
+  ;; Add MELPA to the repositories list
   (require 'package)
   (add-to-list 'package-archives
 	       '("melpa" . "https://melpa.org/packages/") t)
+
+  ;; Load packages list
   (package-initialize)
 
-  ;;; Look and feel
+  ;; Setup `use-package'
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+  (eval-when-compile
+    (require 'use-package))
+#+END_SRC
 
+* Look and Feel
+#+BEGIN_SRC emacs-lisp
   ;; Set the theme
-  (unless (package-installed-p 'ample-theme)
-    (package-install 'ample-theme))
-  (load-theme 'ample t)
+  (use-package ample-theme
+    :ensure t
+    :config (load-theme 'ample t))
 
   ;; Disable menu bar
   (menu-bar-mode -1)
@@ -42,179 +51,181 @@
   (setq-default show-trailing-whitespace t)
 
   ;; Flash mode line on bell
-  (unless (package-installed-p 'mode-line-bell)
-    (package-install 'mode-line-bell))
-  (require 'mode-line-bell)
-  (mode-line-bell-mode)
+  (use-package mode-line-bell
+    :ensure t
+    :config (mode-line-bell-mode))
+#+END_SRC
 
-  ;;; Buffer input and interaction
+  #+BEGIN_SRC emacs-lisp
 
-  ;; Better mouse scrolling
-  (setq mouse-wheel-progressive-speed nil)
+       ;;; Buffer input and interaction
 
-  ;; Use short yes/no answers
-  (setq-default use-short-answers t)
+   ;; Better mouse scrolling
+   (setq mouse-wheel-progressive-speed nil)
 
-  ;; Auto-pair parenthesis
-  (electric-pair-mode 1)
+   ;; Use short yes/no answers
+   (setq-default use-short-answers t)
 
-  ;; VIM emulation
-  (unless (package-installed-p 'evil)
-    (package-install 'evil))
-  (setq
-   ;; Scroll up with C-u
-   evil-want-C-u-scroll t
-   ;; Yank to EOL with Y
-   evil-want-Y-yank-to-eol t
-   ;; Create split windows below
-   evil-split-window-below t
-   ;; Create vsplit windows to the right
-   evil-vsplit-window-right t)
-  (require 'evil)
-  (evil-mode 1)
+   ;; Auto-pair parenthesis
+   (electric-pair-mode 1)
 
-  ;; Automatically trim trailing whitespace on save
-  (add-hook 'before-save-hook 'delete-trailing-whitespace)
+   ;; VIM emulation
+   (unless (package-installed-p 'evil)
+     (package-install 'evil))
+   (setq
+    ;; Scroll up with C-u
+    evil-want-C-u-scroll t
+    ;; Yank to EOL with Y
+    evil-want-Y-yank-to-eol t
+    ;; Create split windows below
+    evil-split-window-below t
+    ;; Create vsplit windows to the right
+    evil-vsplit-window-right t)
+   (require 'evil)
+   (evil-mode 1)
 
-  ;;; General interface
+   ;; Automatically trim trailing whitespace on save
+   (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
-  ;; Completion UI
-  (unless (package-installed-p 'vertico)
-    (package-install 'vertico))
-  (require 'vertico)
-  (vertico-mode 1)
+       ;;; General interface
 
-  ;; Improve directory navigation
-  (define-key vertico-map (kbd "RET") #'vertico-directory-enter)
-  (define-key vertico-map (kbd "DEL") #'vertico-directory-delete-word)
-  (define-key vertico-map (kbd "M-d") #'vertico-directory-delete-char)
+   ;; Completion UI
+   (unless (package-installed-p 'vertico)
+     (package-install 'vertico))
+   (require 'vertico)
+   (vertico-mode 1)
 
-  ;;; Extended completion utilities
-  (unless (package-installed-p 'consult)
-    (package-install 'consult))
-  (global-set-key [rebind switch-to-buffer] #'consult-buffer)
-  (global-set-key (kbd "C-c j") #'consult-line)
-  (global-set-key (kbd "C-c i") #'consult-imenu)
-  (setq read-buffer-completion-ignore-case t
-	read-file-name-completion-ignore-case t
-	completion-ignore-case t)
+   ;; Improve directory navigation
+   (define-key vertico-map (kbd "RET") #'vertico-directory-enter)
+   (define-key vertico-map (kbd "DEL") #'vertico-directory-delete-word)
+   (define-key vertico-map (kbd "M-d") #'vertico-directory-delete-char)
 
-  ;;; LSP Support
-  (unless (package-installed-p 'eglot)
-    (package-install 'eglot))
+       ;;; Extended completion utilities
+   (unless (package-installed-p 'consult)
+     (package-install 'consult))
+   (global-set-key [rebind switch-to-buffer] #'consult-buffer)
+   (global-set-key (kbd "C-c j") #'consult-line)
+   (global-set-key (kbd "C-c i") #'consult-imenu)
+   (setq read-buffer-completion-ignore-case t
+	 read-file-name-completion-ignore-case t
+	 completion-ignore-case t)
 
-  ;; Enable LSP support by default in programming buffers
-  (add-hook 'prog-mode-hook #'eglot-ensure)
+       ;;; LSP Support
+   (unless (package-installed-p 'eglot)
+     (package-install 'eglot))
 
-  ;; Create a memorable alias for `eglot-ensure'.
-  (defalias 'start-lsp-server #'eglot)
+   ;; Enable LSP support by default in programming buffers
+   (add-hook 'prog-mode-hook #'eglot-ensure)
 
-  ;; Completion style
-  (unless (package-installed-p 'orderless)
-    (package-install 'orderless))
-  (require 'orderless)
-  (setq completion-styles '(orderless basic)
-	completion-category-overrides '((file (styles basic partial-completion))))
+   ;; Create a memorable alias for `eglot-ensure'.
+   (defalias 'start-lsp-server #'eglot)
 
-  ;; Persist history over restarts
-  (require 'savehist)
-  (savehist-mode 1)
+   ;; Completion style
+   (unless (package-installed-p 'orderless)
+     (package-install 'orderless))
+   (require 'orderless)
+   (setq completion-styles '(orderless basic)
+	 completion-category-overrides '((file (styles basic partial-completion))))
 
-
-  ;;; Inline static analysis
-
-  ;; Enabled inline static analysis
-  (add-hook 'prog-mode-hook #'flymake-mode)
-
-  ;; Display messages when idle, without prompting
-  (setq help-at-pt-display-when-idle t)
-
-  ;; Message navigation bindings
-  (with-eval-after-load 'flymake
-    (define-key flymake-mode-map (kbd "C-c n") #'flymake-goto-next-error)
-    (define-key flymake-mode-map (kbd "C-c p") #'flymake-goto-prev-error))
-
-  ;;; Pop-up completion
-  (unless (package-installed-p 'corfu)
-    (package-install 'corfu))
-
-  ;; Enable autocompletion by default in programming buffers
-  (add-hook 'prog-mode-hook #'corfu-mode)
-
-  ;; Enable automatic completion.
-  (setq corfu-auto t)
+   ;; Persist history over restarts
+   (require 'savehist)
+   (savehist-mode 1)
 
 
+       ;;; Inline static analysis
 
-  ;;; Git client
-  (unless (package-installed-p 'magit)
-    (package-install 'magit))
+   ;; Enabled inline static analysis
+   (add-hook 'prog-mode-hook #'flymake-mode)
 
-  ;; Bind the `magit-status' command to a convenient key.
-  (global-set-key (kbd "C-c g") #'magit-status)
+   ;; Display messages when idle, without prompting
+   (setq help-at-pt-display-when-idle t)
 
-  ;;; Indication of local VCS changes
-  (unless (package-installed-p 'diff-hl)
-    (package-install 'diff-hl))
+   ;; Message navigation bindings
+   (with-eval-after-load 'flymake
+     (define-key flymake-mode-map (kbd "C-c n") #'flymake-goto-next-error)
+     (define-key flymake-mode-map (kbd "C-c p") #'flymake-goto-prev-error))
 
-  ;; Enable `diff-hl' support by default in programming buffers
-  (add-hook 'prog-mode-hook #'diff-hl-mode)
+       ;;; Pop-up completion
+   (unless (package-installed-p 'corfu)
+     (package-install 'corfu))
+
+   ;; Enable autocompletion by default in programming buffers
+   (add-hook 'prog-mode-hook #'corfu-mode)
+
+   ;; Enable automatic completion.
+   (setq corfu-auto t)
 
 
 
-  ;;; Go Support
-  (unless (package-installed-p 'go-mode)
-    (package-install 'go-mode))
+       ;;; Git client
+   (unless (package-installed-p 'magit)
+     (package-install 'magit))
 
-  ;;; JSON Support
-  (unless (package-installed-p 'json-mode)
-    (package-install 'json-mode))
+   ;; Bind the `magit-status' command to a convenient key.
+   (global-set-key (kbd "C-c g") #'magit-status)
 
-  ;;; Lua Support
-  (unless (package-installed-p 'lua-mode)
-    (package-install 'lua-mode))
+       ;;; Indication of local VCS changes
+   (unless (package-installed-p 'diff-hl)
+     (package-install 'diff-hl))
 
-  ;;; Rust Support
-  (unless (package-installed-p 'rust-mode)
-    (package-install 'rust-mode))
-
-  ;;; YAML Support
-  (unless (package-installed-p 'yaml-mode)
-    (package-install 'yaml-mode))
-
-  ;;; Markdown support
-  (unless (package-installed-p 'markdown-mode)
-    (package-install 'markdown-mode))
+   ;; Enable `diff-hl' support by default in programming buffers
+   (add-hook 'prog-mode-hook #'diff-hl-mode)
 
 
 
+       ;;; Go Support
+   (unless (package-installed-p 'go-mode)
+     (package-install 'go-mode))
+
+       ;;; JSON Support
+   (unless (package-installed-p 'json-mode)
+     (package-install 'json-mode))
+
+       ;;; Lua Support
+   (unless (package-installed-p 'lua-mode)
+     (package-install 'lua-mode))
+
+       ;;; Rust Support
+   (unless (package-installed-p 'rust-mode)
+     (package-install 'rust-mode))
+
+       ;;; YAML Support
+   (unless (package-installed-p 'yaml-mode)
+     (package-install 'yaml-mode))
+
+       ;;; Markdown support
+   (unless (package-installed-p 'markdown-mode)
+     (package-install 'markdown-mode))
 
 
-  ;;; EditorConfig support
-  (unless (package-installed-p 'editorconfig)
-    (package-install 'editorconfig))
 
-  ;; Enable EditorConfig
-  (editorconfig-mode t)
 
-  ;;; In-Emacs Terminal Emulation
-  (unless (package-installed-p 'eat)
-    (package-install 'eat))
 
-  ;; Close the terminal buffer when the shell terminates.
-  (setq eat-kill-buffer-on-exit t)
+       ;;; EditorConfig support
+   (unless (package-installed-p 'editorconfig)
+     (package-install 'editorconfig))
 
-  ;; Enable mouse-support.
-  (setq eat-enable-mouse t)
+   ;; Enable EditorConfig
+   (editorconfig-mode t)
 
-  ;;; Jump to arbitrary positions
-  (unless (package-installed-p 'avy)
-    (package-install 'avy))
-  (global-set-key (kbd "C-c z") #'avy-goto-word-1)
+       ;;; In-Emacs Terminal Emulation
+   (unless (package-installed-p 'eat)
+     (package-install 'eat))
 
-  ;; Store automatic customisation options elsewhere
-  (setq custom-file (locate-user-emacs-file "custom.el"))
-  (when (file-exists-p custom-file)
-    (load custom-file))
+   ;; Close the terminal buffer when the shell terminates.
+   (setq eat-kill-buffer-on-exit t)
+
+   ;; Enable mouse-support.
+   (setq eat-enable-mouse t)
+
+       ;;; Jump to arbitrary positions
+   (unless (package-installed-p 'avy)
+     (package-install 'avy))
+   (global-set-key (kbd "C-c z") #'avy-goto-word-1)
+
+   ;; Store automatic customisation options elsewhere
+   (setq custom-file (locate-user-emacs-file "custom.el"))
+   (when (file-exists-p custom-file)
+     (load custom-file))
 
 #+END_SRC
