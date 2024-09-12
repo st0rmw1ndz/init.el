@@ -90,6 +90,7 @@ Useful options and packages for manipulating text, including the almighty Evil m
 
   ;; General extension for Evil
   (use-package evil-collection
+    :ensure t
     :after evil
     :config
     (setq evil-collection-mode-list '(dired ibuffer))
